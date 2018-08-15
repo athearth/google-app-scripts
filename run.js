@@ -92,7 +92,7 @@ MessageReader.prototype.markAsChecked = function () {
 };
 
 MessageReader.prototype.hasKey = function (key) {
-  return !!this._keys[key];
+  return this._keys[key];
 };
 
 MessageReader.prototype._getDateParts = function () {
