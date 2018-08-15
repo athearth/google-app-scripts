@@ -22,16 +22,16 @@ var identifier = 'spacee';
 var checkedIdentifier = 'spacee_checked';
 /*********************/
 
-function listLabels() {
-  withManager(getAcceptedMessages(), function (manager) {
-    manager.createEventMatchWith(googleCalendars);
+function apply() {
+  withMessageReader(getAcceptedMessages(), function (reader) {
+    createEventMatchWith(reader, googleCalendars);
   });
-  withManager(getCancelledMessages(), function (manager) {
-    manager.deleteEventMatchWith(googleCalendars);
+  withMessageReader(getCancelledMessages(), function (reader) {
+    deleteEventMatchWith(reader, googleCalendars);
   });
 }
 
-function withManager(messages, callback) {
+function withMessageReader(messages, callback) {
   messages.forEach(function (message) {
     var reader = new MessageReader(message.id, message.threadId);
     
@@ -39,8 +39,7 @@ function withManager(messages, callback) {
       reader.registerKeyMatchWith(key, spaceeTitles[key]);
     }
     
-    var manager = new EventManager(reader);
-    callback(manager);
+    callback(reader);
   });
 }
 
@@ -60,21 +59,19 @@ function convertToDate(year, month, date, hour, minute) {
   return new Date([year, month, date].join('-') + 'T' + ([hour, minute, '00'].join(':')));
 }
 
-function EventManager(messageReader) {
-  this.messageReader = messageReader;
-}
-
-EventManager.prototype.createEventMatchWith = function (params) {
-  for (var i = 0; params.length > 0; i++) {
-    var props = params[i];
-    if (props && this.messageReader.hasKey(props.key)) {
+function createEventMatchWith(reader, params) {
+  params.forEach(function (props) {
+    if (props && reader.hasKey(props.key)) {
       CalendarApp
       .getCalendarById(props.calendarId)
-      .createEvent(props.title, this.messageReader.fromDate, this.messageReader.toDate);
-      this.messageReader.markAsChecked();
+      .createEvent(props.title, reader.fromDate, reader.toDate);
+      reader.markAsChecked();
     }
-  }
-};
+  });
+}
+
+function deleteEventMatchWith(reader, params) {
+}
 
 function MessageReader(messageId, threadId) {
   this.messageId = messageId;
